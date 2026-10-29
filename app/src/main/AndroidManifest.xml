@@ -5,11 +5,9 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
         android:label="Ticketmaster"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Material3.Dark.NoActionBar">
+        android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
         
         <activity
             android:name=".MainActivity"
@@ -22,4 +20,3 @@
     </application>
 
 </manifest>
-
