@@ -62,6 +62,7 @@ data class Event(
 )
 
 data class Ticket(
+    val orderId: String,
     val eventName: String,
     val venue: String,
     val date: String,
@@ -173,7 +174,7 @@ fun BottomNavBar(navController: NavHostController) {
         NavigationBarItem(
             selected = currentRoute == "tickets",
             onClick = { navController.navigate("tickets") },
-            icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "My Tickets") },
+            icon = { Icon(Icons.Default.ConfirmationNumber, contentDescription = "My Tickets") },
             label = { Text("My Tickets") }
         )
         NavigationBarItem(
@@ -281,7 +282,7 @@ fun EventCard(event: Event, onClick: () -> Unit) {
                 modifier = Modifier.size(50.dp).clip(CircleShape).background(event.accentColor),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.ShoppingCart, contentDescription = null, tint = Color.White)
+                Icon(Icons.Default.ConfirmationNumber, contentDescription = null, tint = Color.White)
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
@@ -341,7 +342,7 @@ fun CheckoutBottomSheet(event: Event, onDismiss: () -> Unit, onPaymentComplete: 
                 Text("$${selectedPrice.toInt()}")
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Service Fee", color = Color.Gray)
+                Text("Service & Processing Fee", color = Color.Gray)
                 Text("$15", color = Color.Gray)
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -354,8 +355,10 @@ fun CheckoutBottomSheet(event: Event, onDismiss: () -> Unit, onPaymentComplete: 
 
             Button(
                 onClick = {
-                    val barcode = "TM-${(100000..999999).random()}"
+                    val orderNum = "TM-${(10000000..99999999).random()}"
+                    val barcode = "849201948201${(100..999).random()}"
                     val mockTicket = Ticket(
+                        orderId = orderNum,
                         eventName = event.title,
                         venue = event.venue,
                         date = event.date,
@@ -366,20 +369,35 @@ fun CheckoutBottomSheet(event: Event, onDismiss: () -> Unit, onPaymentComplete: 
                         barcodeId = barcode
                     )
 
+                    // --- AUTHENTIC TICKETMASTER CONFIRMATION EMAIL TEMPLATE ---
                     val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
                         data = Uri.parse("mailto:")
-                        putExtra(Intent.EXTRA_SUBJECT, "Ticketmaster Order Confirmation: ${event.title}")
+                        putExtra(Intent.EXTRA_SUBJECT, "Order Confirmation: Your Tickets for ${event.title} (#$orderNum)")
                         putExtra(Intent.EXTRA_TEXT, """
-                            Thank you for your order!
+                            ==================================================
+                            TICKETMASTER ORDER CONFIRMATION
+                            ==================================================
+                            Thank you for your purchase! Your tickets are securely stored in your Ticketmaster Digital Wallet.
                             
-                            Event: ${event.title}
-                            Venue: ${event.venue}
-                            Date: ${event.date}
-                            Tier: $selectedTier
-                            Total Paid: $${(selectedPrice + 15).toInt()}
-                            Barcode: $barcode
+                            ORDER DETAILS:
+                            • Order Number: $orderNum
+                            • Purchase Date: ${java.time.LocalDate.now()}
                             
-                            Your tickets are ready in your Ticketmaster App digital wallet.
+                            EVENT INFORMATION:
+                            • Event: ${event.title}
+                            • Venue: ${event.venue}
+                            • Date & Time: ${event.date} at 8:00 PM
+                            
+                            SEAT LOCATION:
+                            • Ticket Type: $selectedTier
+                            • Section: ${mockTicket.section} | Row: ${mockTicket.row} | Seat: ${mockTicket.seat}
+                            
+                            PAYMENT SUMMARY:
+                            • Total Charged: $${(selectedPrice + 15).toInt()} (USD)
+                            • Barcode Reference: $barcode
+                            
+                            To access your tickets, open the Ticketmaster mobile app and navigate to "My Tickets". Have a great event!
+                            ==================================================
                         """.trimIndent())
                     }
                     try {
@@ -394,7 +412,7 @@ fun CheckoutBottomSheet(event: Event, onDismiss: () -> Unit, onPaymentComplete: 
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Complete Mock Purchase", color = Color.Black, fontWeight = FontWeight.Bold)
+                Text("Complete Checkout", color = Color.Black, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -426,72 +444,44 @@ fun DigitalTicketCard(ticket: Ticket) {
         colors = CardDefaults.cardColors(containerColor = Color(0xFF026CDF))
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Text(ticket.eventName, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            Text(ticket.venue, color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
-            Text(ticket.date, color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+            // Authentic Ticketmaster SafeTix Top Banner
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("ticketmaster", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.White)
+                Surface(
+                    color = Color(0xFF00E676),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text(" SAFE-TIX ", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.Black, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(ticket.eventName, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White, maxLines = 2)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(ticket.venue, color = Color.White.copy(alpha = 0.9f), fontSize = 14.sp)
+            Text(ticket.date, color = Color.White, fontWeight = FontWeight.Medium, fontSize = 14.sp)
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Seat grid container styled like Ticketmaster app passes
             Row(
                 modifier = Modifier.fillMaxWidth().background(Color(0xFF0152B3), RoundedCornerShape(12.dp)).padding(12.dp),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                SeatInfoItem("SECTION", ticket.section)
+                SeatInfoItem("SEC", ticket.section)
                 SeatInfoItem("ROW", ticket.row)
                 SeatInfoItem("SEAT", ticket.seat)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // SafeTix Barcode Scanning Box
             Box(
-                modifier = Modifier.fillMaxWidth().height(80.dp).background(Color.White, RoundedCornerShape(8.dp))
-                    .border(2.dp, Color.Gray, RoundedCornerShape(8.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.Place, contentDescription = null, tint = Color.Black, modifier = Modifier.size(36.dp))
-                    Text(ticket.barcodeId, color = Color.Black, fontFamily = FontFamily.Monospace, fontSize = 12.sp)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(
-                    onClick = { },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
-                ) { Text("Transfer") }
-                OutlinedButton(
-                    onClick = { },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
-                ) { Text("Sell") }
-            }
-        }
-    }
-}
-
-@Composable
-fun SeatInfoItem(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, fontSize = 10.sp, color = Color.White.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
-        Text(value, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
-    }
-}
-
-@Composable
-fun ProfileScreen() {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(Icons.Default.AccountCircle, contentDescription = null, modifier = Modifier.size(80.dp), tint = Color(0xFF026CDF))
-        Spacer(modifier = Modifier.height(12.dp))
-        Text("Demo User", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        Text("demo.user@example.com", color = Color.Gray)
-    }
-}
+                modifier = Modifier.fillMaxWidth().height(90.dp).background(Color.White, RoundedCornerShape(10.dp))
+                    .border(2.dp, Color.LightGray, RoundedCornerShape(10.dp)),
+    
