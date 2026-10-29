@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -172,7 +173,7 @@ fun BottomNavBar(navController: NavHostController) {
         NavigationBarItem(
             selected = currentRoute == "tickets",
             onClick = { navController.navigate("tickets") },
-            icon = { Icon(Icons.Default.ConfirmationNumber, contentDescription = "My Tickets") },
+            icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "My Tickets") },
             label = { Text("My Tickets") }
         )
         NavigationBarItem(
@@ -279,7 +280,7 @@ fun EventCard(event: Event, onClick: () -> Unit) {
                 modifier = Modifier.size(50.dp).clip(CircleShape).background(event.accentColor),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.ConfirmationNumber, contentDescription = null, tint = Color.White)
+                Icon(Icons.Default.ShoppingCart, contentDescription = null, tint = Color.White)
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
@@ -421,17 +422,17 @@ fun DigitalTicketCard(ticket: Ticket) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1F2633))
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF026CDF))
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Text(ticket.eventName, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            Text(ticket.venue, color = Color.LightGray, fontSize = 14.sp)
-            Text(ticket.date, color = Color(0xFF026CDF), fontWeight = FontWeight.Medium, fontSize = 14.sp)
+            Text(ticket.venue, color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
+            Text(ticket.date, color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(
-                modifier = Modifier.fillMaxWidth().background(Color(0xFF0D1117), RoundedCornerShape(12.dp)).padding(12.dp),
+                modifier = Modifier.fillMaxWidth().background(Color(0xFF0152B3), RoundedCornerShape(12.dp)).padding(12.dp),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
                 SeatInfoItem("SECTION", ticket.section)
@@ -447,16 +448,26 @@ fun DigitalTicketCard(ticket: Ticket) {
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.QrCodeScanner, contentDescription = null, tint = Color.Black, modifier = Modifier.size(36.dp))
-                    Text(ticket.barcodeId, color = Color.Black, fontWeight = FontWeight.Monospace, fontSize = 12.sp)
+                    Icon(Icons.Default.Place, contentDescription = null, tint = Color.Black, modifier = Modifier.size(36.dp))
+                    Text(ticket.barcodeId, color = Color.Black, fontFamily = FontFamily.Monospace, fontSize = 12.sp)
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(8.dp)) { Text("Transfer") }
-                OutlinedButton(onClick = { }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(8.dp)) { Text("Sell") }
+                OutlinedButton(
+                    onClick = { },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                ) { Text("Transfer") }
+                OutlinedButton(
+                    onClick = { },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                ) { Text("Sell") }
             }
         }
     }
@@ -465,7 +476,7 @@ fun DigitalTicketCard(ticket: Ticket) {
 @Composable
 fun SeatInfoItem(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+        Text(label, fontSize = 10.sp, color = Color.White.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
         Text(value, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
     }
 }
@@ -475,7 +486,7 @@ fun ProfileScreen() {
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Alignment.Center
     ) {
         Icon(Icons.Default.AccountCircle, contentDescription = null, modifier = Modifier.size(80.dp), tint = Color(0xFF026CDF))
         Spacer(modifier = Modifier.height(12.dp))
