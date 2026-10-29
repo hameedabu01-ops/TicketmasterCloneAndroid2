@@ -27,7 +27,10 @@ jobs:
         echo "$PWD/gradle-${GRADLE_VERSION}/bin" >> $GITHUB_PATH
 
     - name: Build Debug APK
-      run: gradle assembleDebug
+      env:
+        ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+        ANDROID_HOME: /usr/local/lib/android/sdk
+      run: gradle assembleDebug --stacktrace
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
