@@ -26,6 +26,10 @@ jobs:
         unzip -q gradle-${GRADLE_VERSION}-bin.zip
         echo "$PWD/gradle-${GRADLE_VERSION}/bin" >> $GITHUB_PATH
 
+    - name: Generate local.properties
+      run: |
+        echo "sdk.dir=/usr/local/lib/android/sdk" > local.properties
+
     - name: Build Debug APK
       env:
         ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
