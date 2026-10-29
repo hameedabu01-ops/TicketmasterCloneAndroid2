@@ -35,12 +35,12 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-// --- DATA MODELS ---
+// --- NULL-SAFE DATA MODELS ---
 data class TicketmasterResponse(val _embedded: EmbeddedEvents?)
 data class EmbeddedEvents(val events: List<ApiEvent>?)
 data class ApiEvent(
-    val id: String,
-    val name: String,
+    val id: String?,
+    val name: String?,
     val dates: EventDates?,
     val _embedded: EventEmbeddedVenues?,
     val priceRanges: List<PriceRange>?
@@ -205,14 +205,15 @@ fun HomeScreen(onEventSelected: (Event) -> Unit) {
                 keyword = searchQuery.ifEmpty { null },
                 category = catQuery
             )
-            val fetchedEvents = response._embedded?.events?.map { apiEvent ->
+            val fetchedEvents = response._embedded?.events?.mapNotNull { apiEvent ->
+                val title = apiEvent.name ?: return@mapNotNull null
                 Event(
-                    id = apiEvent.id,
-                    title = apiEvent.name,
-                    venue = apiEvent._embedded?.venues?.firstOrNull()?.name ?: "Live Venue",
-                    date = apiEvent.dates?.start?.localDate ?: "TBA",
+                    id = apiEvent.id ?: "0",
+                    title = title,
+                    venue = apiEvent._embedded?.venues?.firstOrNull()?.name ?: "Live Arena",
+                    date = apiEvent.dates?.start?.localDate ?: "2026-12-31",
                     category = selectedCategory,
-                    minPrice = apiEvent.priceRanges?.firstOrNull()?.min ?: 65.0,
+                    minPrice = apiEvent.priceRanges?.firstOrNull()?.min ?: 50.0,
                     accentColor = Color(0xFF026CDF)
                 )
             } ?: emptyList()
@@ -486,7 +487,7 @@ fun ProfileScreen() {
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Alignment.Center
+        verticalArrangement = Arrangement.Center
     ) {
         Icon(Icons.Default.AccountCircle, contentDescription = null, modifier = Modifier.size(80.dp), tint = Color(0xFF026CDF))
         Spacer(modifier = Modifier.height(12.dp))
