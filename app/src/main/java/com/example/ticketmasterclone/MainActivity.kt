@@ -364,7 +364,6 @@ fun CheckoutBottomSheet(event: Event, onDismiss: () -> Unit, onPaymentComplete: 
                         barcodeId = barcode
                     )
 
-                    // Trigger email confirmation receipt via email client intent
                     val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
                         data = Uri.parse("mailto:")
                         putExtra(Intent.EXTRA_SUBJECT, "Ticketmaster Order Confirmation: ${event.title}")
