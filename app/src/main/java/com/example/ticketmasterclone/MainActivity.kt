@@ -35,7 +35,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-// --- NULL-SAFE DATA MODELS ---
 data class TicketmasterResponse(val _embedded: EmbeddedEvents?)
 data class EmbeddedEvents(val events: List<ApiEvent>?)
 data class ApiEvent(
@@ -73,7 +72,6 @@ data class Ticket(
     val barcodeId: String
 )
 
-// --- RETROFIT SERVICE ---
 interface TicketmasterApiService {
     @GET("discovery/v2/events.json")
     suspend fun searchEvents(
@@ -119,7 +117,6 @@ fun TicketmasterTheme(content: @Composable () -> Unit) {
     MaterialTheme(colorScheme = darkColors, content = content)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TicketmasterApp() {
     val navController = rememberNavController()
@@ -146,7 +143,7 @@ fun TicketmasterApp() {
         }
 
         selectedEventForCheckout?.let { event ->
-            CheckoutBottomSheet(
+            CheckoutDialog(
                 event = event,
                 onDismiss = { selectedEventForCheckout = null },
                 onPaymentComplete = { newTicket ->
@@ -174,7 +171,7 @@ fun BottomNavBar(navController: NavHostController) {
         NavigationBarItem(
             selected = currentRoute == "tickets",
             onClick = { navController.navigate("tickets") },
-            icon = { Icon(Icons.Default.ConfirmationNumber, contentDescription = "My Tickets") },
+            icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "My Tickets") },
             label = { Text("My Tickets") }
         )
         NavigationBarItem(
@@ -282,77 +279,28 @@ fun EventCard(event: Event, onClick: () -> Unit) {
                 modifier = Modifier.size(50.dp).clip(CircleShape).background(event.accentColor),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.ConfirmationNumber, contentDescription = null, tint = Color.White)
+                Icon(Icons.Default.ShoppingCart, contentDescription = null, tint = Color.White)
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = event.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, maxLines = 1)
-                Text(text = "${event.venue} • ${event.date}", color = Color.Gray, fontSize = 12.sp, maxLines = 1)
-                Text(text = "From $${event.minPrice.toInt()}", color = Color(0xFF026CDF), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-            }
-            Button(
-                onClick = onClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF026CDF)),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text("Tickets")
-            }
-        }
-    }
-}
+                Text(text = "${event.venue} •${event.date}", color = Color.Gray, fontSize = 12.sp, maxLines = 1)
+                Text(text = "From $${event.minPrice.toInt()}", color = Color(0xFF026CDF), fontWeight = FontWeight.SemiBold, fontSize = 14.sp) } Button( onClick = onClick, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF026CDF)), shape = RoundedCornerShape(8.dp) ) { Text("Tickets") } } } }  @Composable fun CheckoutDialog(event: Event, onDismiss: () -> Unit, onPaymentComplete: (Ticket) -> Unit) { val context = LocalContext.current var selectedTier by remember { mutableStateOf("General Admission") } val seatTiers = listOf( "VIP Floor" to event.minPrice * 2.5, "Lower Bowl" to event.minPrice * 1.5, "General Admission" to event.minPrice ) val selectedPrice = seatTiers.first { it.first == selectedTier }.second      AlertDialog( onDismissRequest = onDismiss, containerColor = Color(0xFF161B22), title = { Column { Text("Select Seats", fontSize = 20.sp, fontWeight = FontWeight.Bold) Text(event.title, color = Color.Gray, fontSize = 14.sp) } }, text = { Column { seatTiers.forEach { (tier, price) -> Row( modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp) .clip(RoundedCornerShape(8.dp)) .background(if (selectedTier == tier) Color(0xFF026CDF).copy(alpha = 0.2f) else Color.Transparent) .clickable { selectedTier = tier } .padding(10.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically ) { Text(tier, fontWeight = FontWeight.Medium) Text("$${price.toInt()}", fontWeight = FontWeight.Bold)
+                    }
+                }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CheckoutBottomSheet(event: Event, onDismiss: () -> Unit, onPaymentComplete: (Ticket) -> Unit) {
-    val context = LocalContext.current
-    var selectedTier by remember { mutableStateOf("General Admission") }
-    val seatTiers = listOf(
-        "VIP Floor" to event.minPrice * 2.5,
-        "Lower Bowl" to event.minPrice * 1.5,
-        "General Admission" to event.minPrice
-    )
-    val selectedPrice = seatTiers.first { it.first == selectedTier }.second
+                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.Gray.copy(alpha = 0.3f))
 
-    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = Color(0xFF161B22)) {
-        Column(modifier = Modifier.padding(24.dp).fillMaxWidth()) {
-            Text(text = "Select Seats", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            Text(text = event.title, color = Color.Gray, fontSize = 14.sp)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            seatTiers.forEach { (tier, price) ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (selectedTier == tier) Color(0xFF026CDF).copy(alpha = 0.2f) else Color.Transparent)
-                        .clickable { selectedTier = tier }
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(tier, fontWeight = FontWeight.Medium)
-                    Text("$${price.toInt()}", fontWeight = FontWeight.Bold)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("1x Ticket ($selectedTier)") Text("$${selectedPrice.toInt()}")
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Service Fee", color = Color.Gray)
+                    Text("$15", color = Color.Gray) } Spacer(modifier = Modifier.height(8.dp)) Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text("Total", fontWeight = FontWeight.Bold, fontSize = 18.sp) Text("$${(selectedPrice + 15).toInt()}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFF00E676))
                 }
             }
-
-            Divider(modifier = Modifier.padding(vertical = 16.dp), color = Color.Gray.copy(alpha = 0.3f))
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("1x Ticket ($selectedTier)")
-                Text("$${selectedPrice.toInt()}")
-            }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Service & Processing Fee", color = Color.Gray)
-                Text("$15", color = Color.Gray)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Total", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Text("$${(selectedPrice + 15).toInt()}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFF00E676))
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
+        },
+        confirmButton = {
             Button(
                 onClick = {
                     val orderNum = "TM-${(10000000..99999999).random()}"
@@ -369,7 +317,6 @@ fun CheckoutBottomSheet(event: Event, onDismiss: () -> Unit, onPaymentComplete: 
                         barcodeId = barcode
                     )
 
-                    // --- AUTHENTIC TICKETMASTER CONFIRMATION EMAIL TEMPLATE ---
                     val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
                         data = Uri.parse("mailto:")
                         putExtra(Intent.EXTRA_SUBJECT, "Order Confirmation: Your Tickets for ${event.title} (#$orderNum)")
@@ -381,7 +328,6 @@ fun CheckoutBottomSheet(event: Event, onDismiss: () -> Unit, onPaymentComplete: 
                             
                             ORDER DETAILS:
                             • Order Number: $orderNum
-                            • Purchase Date: ${java.time.LocalDate.now()}
                             
                             EVENT INFORMATION:
                             • Event: ${event.title}
@@ -390,13 +336,10 @@ fun CheckoutBottomSheet(event: Event, onDismiss: () -> Unit, onPaymentComplete: 
                             
                             SEAT LOCATION:
                             • Ticket Type: $selectedTier
-                            • Section: ${mockTicket.section} | Row: ${mockTicket.row} | Seat: ${mockTicket.seat}
-                            
-                            PAYMENT SUMMARY:
-                            • Total Charged: $${(selectedPrice + 15).toInt()} (USD)
+                            • Section: ${mockTicket.section} \vert{} Row:${mockTicket.row} | Seat: ${mockTicket.seat}  PAYMENT SUMMARY: • Total Charged: $${(selectedPrice + 15).toInt()} (USD)
                             • Barcode Reference: $barcode
                             
-                            To access your tickets, open the Ticketmaster mobile app and navigate to "My Tickets". Have a great event!
+                            To access your tickets, open the Ticketmaster mobile app and navigate to "My Tickets".
                             ==================================================
                         """.trimIndent())
                     }
@@ -408,14 +351,14 @@ fun CheckoutBottomSheet(event: Event, onDismiss: () -> Unit, onPaymentComplete: 
 
                     onPaymentComplete(mockTicket)
                 },
-                modifier = Modifier.fillMaxWidth().height(50.dp),
+                modifier = Modifier.fillMaxWidth().height(48.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(10.dp)
             ) {
                 Text("Complete Checkout", color = Color.Black, fontWeight = FontWeight.Bold)
             }
         }
-    }
+    )
 }
 
 @Composable
@@ -444,7 +387,6 @@ fun DigitalTicketCard(ticket: Ticket) {
         colors = CardDefaults.cardColors(containerColor = Color(0xFF026CDF))
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            // Authentic Ticketmaster SafeTix Top Banner
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -468,7 +410,6 @@ fun DigitalTicketCard(ticket: Ticket) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Seat grid container styled like Ticketmaster app passes
             Row(
                 modifier = Modifier.fillMaxWidth().background(Color(0xFF0152B3), RoundedCornerShape(12.dp)).padding(12.dp),
                 horizontalArrangement = Arrangement.SpaceAround
@@ -480,8 +421,11 @@ fun DigitalTicketCard(ticket: Ticket) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // SafeTix Barcode Scanning Box
             Box(
                 modifier = Modifier.fillMaxWidth().height(90.dp).background(Color.White, RoundedCornerShape(10.dp))
                     .border(2.dp, Color.LightGray, RoundedCornerShape(10.dp)),
-    
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.Place, contentDescription = null, tint = Color.
+                         
