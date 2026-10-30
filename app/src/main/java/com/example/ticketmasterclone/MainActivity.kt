@@ -284,19 +284,71 @@ fun EventCard(event: Event, onClick: () -> Unit) {
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = event.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, maxLines = 1)
-                Text(text = "${event.venue} •${event.date}", color = Color.Gray, fontSize = 12.sp, maxLines = 1)
-                Text(text = "From $${event.minPrice.toInt()}", color = Color(0xFF026CDF), fontWeight = FontWeight.SemiBold, fontSize = 14.sp) } Button( onClick = onClick, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF026CDF)), shape = RoundedCornerShape(8.dp) ) { Text("Tickets") } } } }  @Composable fun CheckoutDialog(event: Event, onDismiss: () -> Unit, onPaymentComplete: (Ticket) -> Unit) { val context = LocalContext.current var selectedTier by remember { mutableStateOf("General Admission") } val seatTiers = listOf( "VIP Floor" to event.minPrice * 2.5, "Lower Bowl" to event.minPrice * 1.5, "General Admission" to event.minPrice ) val selectedPrice = seatTiers.first { it.first == selectedTier }.second      AlertDialog( onDismissRequest = onDismiss, containerColor = Color(0xFF161B22), title = { Column { Text("Select Seats", fontSize = 20.sp, fontWeight = FontWeight.Bold) Text(event.title, color = Color.Gray, fontSize = 14.sp) } }, text = { Column { seatTiers.forEach { (tier, price) -> Row( modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp) .clip(RoundedCornerShape(8.dp)) .background(if (selectedTier == tier) Color(0xFF026CDF).copy(alpha = 0.2f) else Color.Transparent) .clickable { selectedTier = tier } .padding(10.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically ) { Text(tier, fontWeight = FontWeight.Medium) Text("$${price.toInt()}", fontWeight = FontWeight.Bold)
+                Text(text = "${event.venue} • ${event.date}", color = Color.Gray, fontSize = 12.sp, maxLines = 1)
+                Text(text = "From $${event.minPrice.toInt()}", color = Color(0xFF026CDF), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+            }
+            Button(
+                onClick = onClick,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF026CDF)),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("Tickets")
+            }
+        }
+    }
+}
+
+@Composable
+fun CheckoutDialog(event: Event, onDismiss: () -> Unit, onPaymentComplete: (Ticket) -> Unit) {
+    val context = LocalContext.current
+    var selectedTier by remember { mutableStateOf("General Admission") }
+    val seatTiers = listOf(
+        "VIP Floor" to event.minPrice * 2.5,
+        "Lower Bowl" to event.minPrice * 1.5,
+        "General Admission" to event.minPrice
+    )
+    val selectedPrice = seatTiers.first { it.first == selectedTier }.second
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF161B22),
+        title = {
+            Column {
+                Text("Select Seats", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(event.title, color = Color.Gray, fontSize = 14.sp)
+            }
+        },
+        text = {
+            Column {
+                seatTiers.forEach { (tier, price) ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (selectedTier == tier) Color(0xFF026CDF).copy(alpha = 0.2f) else Color.Transparent)
+                            .clickable { selectedTier = tier }
+                            .padding(10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(tier, fontWeight = FontWeight.Medium)
+                        Text("$${price.toInt()}", fontWeight = FontWeight.Bold)
                     }
                 }
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.Gray.copy(alpha = 0.3f))
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("1x Ticket ($selectedTier)") Text("$${selectedPrice.toInt()}")
+                    Text("1x Ticket ($selectedTier)")
+                    Text("$${selectedPrice.toInt()}")
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("Service Fee", color = Color.Gray)
-                    Text("$15", color = Color.Gray) } Spacer(modifier = Modifier.height(8.dp)) Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text("Total", fontWeight = FontWeight.Bold, fontSize = 18.sp) Text("$${(selectedPrice + 15).toInt()}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFF00E676))
+                    Text("$15", color = Color.Gray)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Total", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text("$${(selectedPrice + 15).toInt()}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFF00E676))
                 }
             }
         },
@@ -336,7 +388,10 @@ fun EventCard(event: Event, onClick: () -> Unit) {
                             
                             SEAT LOCATION:
                             • Ticket Type: $selectedTier
-                            • Section: ${mockTicket.section} \vert{} Row:${mockTicket.row} | Seat: ${mockTicket.seat}  PAYMENT SUMMARY: • Total Charged: $${(selectedPrice + 15).toInt()} (USD)
+                            • Section: ${mockTicket.section} | Row: ${mockTicket.row} | Seat: ${mockTicket.seat}
+                            
+                            PAYMENT SUMMARY:
+                            • Total Charged: $${(selectedPrice + 15).toInt()} (USD)
                             • Barcode Reference: $barcode
                             
                             To access your tickets, open the Ticketmaster mobile app and navigate to "My Tickets".
@@ -427,5 +482,6 @@ fun DigitalTicketCard(ticket: Ticket) {
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.Place, contentDescription = null, tint = Color.
-                         
+                    Icon(Icons.Default.Place, contentDescription = null, tint = Color.Black, modifier = Modifier.size(36.dp))
+                    Text(ticket.barcodeId, color = Color.Black, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+           
